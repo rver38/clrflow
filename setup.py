@@ -1,10 +1,10 @@
 from distutils.core import setup
 setup(
   name = 'clrflow',
-  packages = ['clrflow'],   # Chose the same as "name"
+  packages = ['clrflow'],
   version = '1.0',
   license='MIT',
-  description = 'An improved color module like colorama with additional features and tools.',   # Give a short description about your library
+  description = 'An improved color module like colorama with additional features and tools.',
   author = 'rver',                   
   author_email = 'rverflow@gmail.com',      
   url = 'https://github.com/rver38/clrflow/',   
