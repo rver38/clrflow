@@ -1,36 +1,43 @@
 # clrflow *(colorflow)*
 
-**clrflow** is a text formatting module originally for python with known features aswell as more. (including popular features included in colorama,pycolor,...)
-it is supposed to be an easy to use, helpful addition to a script for beauty.
+**clrflow** is a text formatting module for python focused on (but not limited to) colorful features such as gradients
 
-## Features
+it also includes features like progressbars, loading wheels, text centering, ...
 
-- create duocolored gradients with custom rgb values and automatic lenght, layer, direction, ...
-- create multicolored gradient patterns (with same options as above) with runtime configurable parameters of a pre-existing instance (direction: horizontal -> vertical, layer: fore -> back, ...)
-- add color of any (predefined/custom) value aswell as formatting to strings with 2 simple functions
-- align text (including gradients) within the terminal horizontally and vertically, aswell as in place horizontally
-- create fully customizable loading/progress bars
-- print text to specific coordinates in the terminal
-- print text with a delay between each character
-#### more incoming
-
-## Connections
-[Discord Server](https://discord.gg/H3qU27c5gz)
-[Github Profile](https://github.com/rver38)
-
-## Platforms
-
-It is not yet fully known, but clrflow works best on Linux and Windows. With feedback it should become universal in the future.
-
-## Installation & compatibility (not fully tested)
-
-- Known: Python 3+
-- Future: Node-js 16.5+
-  
+## installation
+**requires python 3**
 ```sh
 pip install clrflow
 ```
 
-## License
+## features
+### formatting
+- two-colored, fore/background, vertical/horizontal, custom rgb color **gradients**
+- multicolor, fore/background, vertical/horizontal, custom rgb color, runtime-alterable, fixed blending **gradient patterns**
+- functions for formatting and coloring strings
 
-Clrflow is licensed under the **MIT License**
+### misc
+- proportional horizontal and vertical, aswell as static horizontal text alignment within the terminal
+- fully customizable **progressbars and loading wheels**
+- typewriter effect
+#### more incoming
+
+## connections
+[Discord Server](https://discord.gg/UVgDckmQBR)
+
+[Github Profile](https://github.com/rver38)
+
+## compatibility
+clrflow should work on all modern platforms, but here is a list of known supported platforms:
+- Windows 10+
+- Unix-based systems (MacOS, Linux, WSL)
+
+## licensing
+
+you are free to use clrflow privately, comercially and for patents, aswell as modify and distribute it
+
+under the conditions that you:
+- disclose the source being this repository
+- include a copy of the license and copyright notice in this repository
+- use the same license for your work
+- state any changes you made in full
