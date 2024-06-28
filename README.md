@@ -32,7 +32,7 @@ clrflow should work on all modern platforms, but here is a list of known support
 - Windows 10+
 - Unix-based systems (MacOS, Linux, WSL)
 
-## licensing
+## licensing (GPL-3.0)
 
 you are free to use clrflow privately, comercially and for patents, aswell as modify and distribute it
 
