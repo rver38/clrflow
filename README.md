@@ -8,11 +8,12 @@
 pip install clrflow
 ```
 
+# following list is incorrect: it will be updated with the release of clrflow v2.0
 ## features
 ### formatting
 - multicolor, fore/background, vertical/horizontal, custom color, overridable, precomputable/cachable, animatable **gradients**
 - functions for formatting and coloring strings
-#### UNFINISHED LIST; will be updated with the release of clrflow v2.0
+
 ### misc
 - proportional horizontal and vertical, aswell as static horizontal text alignment within the terminal
 - text resizing
