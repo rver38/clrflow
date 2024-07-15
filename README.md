@@ -1,8 +1,6 @@
 # clrflow *(colorflow)*
 
-**clrflow** is a text formatting module for python focused on (but not limited to) colorful features such as gradients
-
-it also includes features like progressbars, loading wheels, text centering, ...
+**clrflow** is a python module for terminal scripts that is centered around (but is not limited to) text formatting
 
 ## installation
 **requires python 3**
@@ -12,32 +10,32 @@ pip install clrflow
 
 ## features
 ### formatting
-- two-colored, fore/background, vertical/horizontal, custom rgb color **gradients**
-- multicolor, fore/background, vertical/horizontal, custom rgb color, runtime-alterable, fixed blending **gradient patterns**
+- multicolor, fore/background, vertical/horizontal, custom color, overridable, precomputable/cachable, animatable **gradients**
 - functions for formatting and coloring strings
-
+#### UNFINISHED LIST; will be updated with the release of clrflow v2.0
 ### misc
 - proportional horizontal and vertical, aswell as static horizontal text alignment within the terminal
-- fully customizable **progressbars and loading wheels**
+- text resizing
+- fully customizable progressbars and loading wheels
 - typewriter effect
 #### more incoming
-
-## connections
-[Discord Server](https://discord.gg/UVgDckmQBR)
-
-[Github Profile](https://github.com/rver38)
 
 ## compatibility
 clrflow should work on all modern platforms, but here is a list of known supported platforms:
 - Windows 10+
 - Unix-based systems (MacOS, Linux, WSL)
 
-## licensing (GPL-3.0)
+## connections
+[discord server](https://discord.gg/UVgDckmQBR)
 
-you are free to use clrflow privately, comercially and for patents, aswell as modify and distribute it
+[github profile](https://github.com/rver38)
+
+## licensing (Omicron 38 Version 1.0)
+
+you are free to use clrflow privately, aswell as modify and redistribute it
 
 under the conditions that you:
-- disclose the source being this repository
-- include a copy of the license and copyright notice in this repository
-- use the same license for your work
+- clearly disclose the source and creator of the software
+- include a verbatim copy of the license and copyright notice 
+- use the exact same license for your distribution
 - state any changes you made in full
