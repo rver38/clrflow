@@ -8,8 +8,8 @@
 pip install clrflow
 ```
 
-# following list is incorrect: it will be updated with the release of clrflow v2.0
 ## features
+### following list is incorrect: it will be updated with the release of clrflow v2.0
 ### formatting
 - multicolor, fore/background, vertical/horizontal, custom color, overridable, precomputable/cachable, animatable **gradients**
 - functions for formatting and coloring strings
