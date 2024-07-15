@@ -1,6 +1,6 @@
 # clrflow *(colorflow)*
 
-**clrflow** is a python module for terminal scripts that is centered around (but is not limited to) text formatting
+**clrflow** is a terminal utility module for python scripts that is centered around (but is not limited to) text formatting
 
 ## installation
 **requires python 3**
