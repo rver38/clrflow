@@ -31,7 +31,7 @@ clrflow should work on all modern platforms, but here is a list of known support
 
 [github profile](https://github.com/rver38)
 
-## licensing (Rverflow Version 1.0)
+## licensing (Rverflow Version 1.1)
 
 you are free to use clrflow privately, aswell as modify and redistribute it
 
