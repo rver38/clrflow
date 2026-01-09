@@ -218,7 +218,7 @@ class Color:
             rgb_dirty = True
 
         if rgb_dirty and (as_dict or as_hex or rgb_tuple or inverted):
-            r, g, b = colour.hsl2rgb((h,s,l), True, False)
+            r, g, b = self.normalHelper(colour.hsl2rgb((h,s,l), True, False), False, False)
 
         if inverted:
             r, g, b = (255-r, 255-g, 255-b)
@@ -311,7 +311,7 @@ class Gradient:
         vertical = fallback(vertical,self.vertical) or False
         terminal =  fallback(terminal, self.terminal) or False
         resolution = fallback(resolution,self.resolution) or 1
-        lenFactor =   fallback(lengthFactor, self.lenFactor) or 1.0
+        lenFactor =   fallback(lengthFactor, self.lenFactor)
 
         foreAsHsl = fallback(foreAsHsl, self.foreIsHsl)
         backAsHsl = fallback(backAsHsl, self.backIsHsl)
@@ -341,8 +341,7 @@ class Gradient:
         if fore:
             data["foreColors"] = ColorSequence(self._match(fore, back), foreIsHsl, foreAsHsl)
         if back:
-            tmp = ColorSequence(self._match(back, fore), backIsHsl, backAsHsl)
-            data["backColors"] = tmp
+            data["backColors"] = ColorSequence(self._match(back, fore), backIsHsl, backAsHsl)
         
         text._update(data)
         return text
@@ -368,15 +367,21 @@ Gradient([Color("#0a5c36"), Color("#28a65c"), Color("#36c666"), Color("#33b162")
 Gradient([Color("#ff5c75"), Color("#ff2d4a"), Color("#d81d36"), Color("#9c131e")], foreName="ruby")
 Gradient([Color("#1f2d6d"), Color("#263da2"), Color("#1e2592"), Color("#080f87")], foreName="sapphire")
 Gradient([Color("#6dafd5"), Color("#86e5f8"), Color("#7cc3e9"), Color("#719fe3"), Color("#3768d5")], foreName="diamond")
-Gradient([Color("#dbdbdb"), Color("#ffd6e7"), Color("#fdffbc"), Color("#bbf3be"), Color("#afc7ff"), Color("#c9ccfc")], foreName="opal")
-Gradient([Color("#f2e2bb"), Color("#effff4"), Color("#ccffec"), Color("#91ffdc"), Color("#62dcd9"), Color("#52d0d8")], foreName="beach")"""
+Gradient([Color("#dbdbdb"), Color("#ffd6e7"), Color("#fdffbc"), Color("#bbf3be"), Color("#afc7ff"), Color("#c9ccfc")], foreName="opal")"""
+Gradient([Color("#f2e2bb"), Color("#effff4"), Color("#ccffec"), Color("#91ffdc"), Color("#62dcd9"), Color("#52d0d8")], foreName="beach", lengthFactor=10.0)
 
 Gradient([
-    Color(0.78, 1, 0.55, isHsl=True),
-    Color(0.88, 1, 0.60, isHsl=True),
-    Color(0.95, 1, 0.65, isHsl=True),
-    Color(0.55, 1, 0.60, isHsl=True),
-], foreName="neon", foreIsHsl=True)
+    Color(0.70, 0.85, 0.35, isHsl=True),
+    Color(0.68, 0.90, 0.40, isHsl=True),
+    Color(0.63, 0.95, 0.50, isHsl=True),
+    Color(0.58, 1.00, 0.55, isHsl=True),
+    Color(0.50, 1.00, 0.60, isHsl=True),
+    Color(0.45, 0.95, 0.65, isHsl=True),
+    Color(0.38, 0.90, 0.60, isHsl=True),
+    Color(0.33, 0.85, 0.55, isHsl=True),
+    Color(0.28, 0.80, 0.50, isHsl=True),
+    Color(0.23, 0.75, 0.45, isHsl=True),
+], foreName="aurora", foreIsHsl=True, lengthFactor=109.0)
 
 _AlignArg: TypeAlias = Optional[Union[str, float]]
 _valueDict = {'top':0, 'left': 0, 'center': 0.5, 'bottom':1, 'right': 1}
@@ -485,7 +490,7 @@ class _RichText:
         return numpy.concatenate(ndArrays), True
     
     def _generateCodeString(self, length):
-        string = self.data.get("codeString", [])
+        string = self.data.get("codeString", list())
         lengths = self.data.get("lastLengths")
         if string and (lengths[0] == length):
             return string, lengths[1]
