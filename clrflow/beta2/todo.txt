@@ -1,0 +1,17 @@
+############ highest to lowest priority ###########
+
+work on Fore, Back, whatever in Simple
+find stuff to add from inspobeta
+
+parser that converts strings with markers like [red], [center] etc into richtext
+
+add screen buffer to support underwriting (preserving text while changing color), overwriting (preserving color while changing text), positionable printing and so on
+change defaulting to not affect color (^^^ probably related to buffer ^^^)
+
+add documentation everywhere
+describe the xyz format everywhere
+check if argtypes is necessary
+
+progressbars
+decipher() - anim type thing that turns a random string step by step to the original
+typewrite() - take a guess

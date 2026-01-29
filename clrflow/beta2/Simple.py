@@ -1,4 +1,6 @@
-from .Universal import ColorTypeHelper
+#give me some peace
+from .Universal import fallback
+from collections.abc import Sequence
 import colour
 
 resetAll = "\033[0m"
@@ -154,16 +156,168 @@ colorTable = { # https://www.w3schools.com/colors/colors_names.asp / https://www
     "yellowgreen": "#9ACD32"
 }
 
+codeTable = {} #convert rgb to colorcode
+levels = [0, 95, 135, 175, 215, 255]
+code = 16
+for r in levels:
+    for g in levels:
+        for b in levels:
+            codeTable[(r, g, b)] = code
+            code += 1
+for i in range(24):
+    gray = 8 + i * 10
+    codeTable[(gray, gray, gray)] = 232 + i
+
+def _getCode(prefix, color):
+    code = codeTable.get(tuple(color))
+    if code is not None:
+        return f"{prefix}8;5;{code}"
+    return f"{prefix}8;2;{color[0]};{color[1]};{color[2]}"
+
+Number = int | float
+"a single numeric value, either int or float"
+
 class Color:
     assumeHsl = False
     
     @staticmethod
-    def parse(x, y, z, isHsl):
+    def _normalizer(color, isHsl, target):
+        if isHsl:
+            hMultiplier = 1/360 if target else 360
+            slMultiplier = 0.01 if target else 100
+            h, s, l = color
+            return (h*hMultiplier, s*slMultiplier, l*slMultiplier)
+        else:
+            rgbMultiplier = 1/255 if target else 255
+            return tuple(int(val*rgbMultiplier) for val in color)
+    
+    @staticmethod
+    def normalHelper(color: Sequence, isHsl: bool=False, normal: bool=None, asHsl:bool=None):
+        #if normal is none, flip, else make it whatever normal is, in the provided color format
+        
+        current = False
+        if isinstance(color, Sequence) and len(color)==3:
+            for n in color:
+                if isinstance(n, float) and 0 <= n <= 1:
+                    current = True
+                elif not (isinstance(n, int) and 0 <= n <= 255):
+                    raise ValueError(f"color must be a sequence of exactly 3 numbers: ints in [0, 255] or floats in [0, 1]; got {repr(color)} instead")
+        
+        target = fallback(normal, not current)
+        
+        asHsl = fallback(asHsl, isHsl)
+        if isHsl != asHsl:
+            if not current:
+                color = Color._normalizer(color, isHsl, True)
+                current = True
+            color = colour.hsl2rgb(color) if isHsl else colour.rgb2hsl(color)
+            
+        if current != target:
+            color = Color._normalizer(color, asHsl, target)
+        return color
+    
+    @staticmethod
+    def parse(x, y=None, z=None, isHsl=None) -> ...:
         if isinstance(x, Color):
             return x.rgb, x.hsl
         elif isinstance(x, str):
             x = colorTable.get(x.lower(), x)
-            return colour.hex2rgb
+            return colour.hex2rgb(x), colour.hex2hsl(x)
+        
+        isHsl = fallback(isHsl, Color.assumeHsl)
+        
+        if isinstance(x, Sequence):
+            if len(x) != 3: raise ValueError(f"if x is a sequence, it must consist of 3 ColorNumbers; got len {len(x)} instead")
+            xyz = x
+        else:
+            xyz = (x,y,z)
+        
+        rgb = Color.normalHelper(xyz, isHsl, False, False) # if this errors, x, y or z is an incorrect color value
+        hsl = Color.normalHelper(xyz, isHsl, True, True) # if this errors, Color.normalHelper broke
+        return rgb, hsl
+    
+    @staticmethod
+    def ansi(color, background=None):
+        if isinstance(color, Color):
+            color, background = color.rgb, fallback(background, color.background)
+        return f"\033[{_getCode(4 if background else 3, color)}m"
+    
+    def __init__(self, x, y=None, z=None, background=False, isHsl=None):
+        self.background = background
+        isHsl = fallback(isHsl, Color.assumeHsl)
+        self.rgb, self.hsl = self.parse(x, y, z, isHsl)
+    
+    def __str__(self):
+        return self.ansi(self)
+    def __add__(self, other):
+        return str(self)+str(other)
+    def __radd__(self, other):
+        return str(other)+str(self)
+    
+    def __repr__(self):
+        return f"Color(rgb={self.rgb}, hsl={self.hsl}, background={self.background})"
+    
+    def __call__(self, as_dict=False, as_hex=False, rgb_tuple=False, hsl_tuple=False, inverted=False, complementary=False):
+        r, g, b = self.rgb
+        h, s, l = self.hsl
+        rgb_dirty = hsl_dirty = False
+
+        if complementary:
+            h, s, l = ((h+0.5)%1, s, 1-l)
+            rgb_dirty = True
+
+        if rgb_dirty and (as_dict or as_hex or rgb_tuple or inverted):
+            r, g, b = self.normalHelper(colour.hsl2rgb((h,s,l), True, False), False, False)
+
+        if inverted:
+            r, g, b = (255-r, 255-g, 255-b)
+            hsl_dirty = True
+        
+        if hsl_dirty and (as_dict or hsl_tuple):
+            h, s, l = colour.rgb2hsl(self.normalHelper((r,g,b), False, True))
+                
+        if rgb_tuple and hsl_tuple:
+            return (r, g, b), (h, s, l)
+        if rgb_tuple:
+            return (r, g, b)
+        if hsl_tuple:
+            return (h, s, l)
+        if as_dict:
+            return {"r":r, "g":g, "b":b, "h":h, "s":s, "l":l, "rgb":(r,g,b), "hsl":(h,s,l)}
+        if as_hex:
+            return '#%02x%02x%02x' % (r, g, b)
+        return self.ansi(self) # cause rgb may be dirty
+    
+    def __call__(self, RGBtriplet=False, HSLtriplet=False, asDict=False, asHex=False, inverted=False, complementary=False):
+        r, g, b = self.rgb
+        h, s, l = self.hsl
+        RGBdirty = HSLdirty = False
+        
+        if complementary:
+            h, s, l = ((h+0.5)%1, s, 1-l)
+            RGBdirty = True
+            
+        if RGBdirty and (asDict or asHex or RGBtriplet or inverted):
+            r, g, b = self.normalHelper((h,s,l), True, False, False)
+        
+        if inverted:
+            r, g, b = (255-r, 255-g, 255-b)
+            HSLdirty = True
+        
+        if HSLdirty and (asDict or HSLtriplet):
+            h, s, l = self.normalHelper((r,g,b), False, True, True)
+            
+        if RGBtriplet and HSLtriplet:
+            return (r, g, b), (h, s, l)
+        if RGBtriplet:
+            return (r, g, b)
+        if HSLtriplet:
+            return (h, s, l)
+        if asDict:
+            return {"r":r, "g":g, "b":b, "h":h, "s":s, "l":l, "rgb":(r,g,b), "hsl":(h,s,l)}
+        if asHex:
+            return '#%02x%02x%02x' % (r, g, b)
+        return self.ansi((r,g,b), self.background) # cause rgb may be dirty
 
 class Fore:
     black = "\033[30m"
@@ -186,7 +340,8 @@ class Fore:
     brightCyan = "\033[96m"
     brightWhite = "\033[97m"
     
-    def __call__()
+    def __call__(self, x, y=None, z=None, isHsl=None):
+        return Color(x, y, z, False, isHsl)
 
 class Back:
     black = "\033[40m"
@@ -208,3 +363,32 @@ class Back:
     brightMagenta = "\033[105m"
     brightCyan = "\033[106m"
     brightWhite = "\033[107m"
+    
+    def __call__(self, x, y=None, z=None, isHsl=None):
+        return Color(x, y, z, True, isHsl)
+
+class Style:
+    Bold = "\033[1m"
+    Dim = "\033[2m"
+    Italic = "\033[3m"
+    Underline = "\033[4m"
+    SlowBlink = "\033[5m"
+    FastBlink = "\033[6m"
+    Negative = "\033[7m"
+    Conceal = "\033[8m"
+    Strikethrough = "\033[9m"
+    Bold = "\033[1m"
+    
+    noBold = "\033[22m"
+    
+    
+    Underline = "\033[4m"
+    noUnderline = "\033[24m"
+    Negative = "\033[7m"
+    noNegative = Positive = "\033[27m"
+    
+    reset = "\033[0m"
+
+class StyleExtended:
+    doubleUnderlineAlt = "\033[4:2m"
+    doubleUnderline = "\033[21m"

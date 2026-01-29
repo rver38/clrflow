@@ -1,7 +1,10 @@
-from typing import TypeAlias, Sequence
+from typing import TypeAlias, NamedTuple
 
 Number = int | float
 """a single numeric value, either int or float"""
 
-Triplet: TypeAlias = Sequence[Number, Number, Number]
-"""a sequence of 3 `Number`s, commonly used to represent color data"""
+class Triplet(NamedTuple):
+    """a tuple of 3 `Number`s, commonly used to represent color data"""
+    x: Number
+    y: Number
+    z: Number

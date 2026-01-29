@@ -1,4 +1,5 @@
-import re, itertools
+import re, itertools, math
+from collections.abc import Sequence
 
 # add ansi container or some typa thing
 
@@ -23,10 +24,9 @@ _rgb_to_code.update({
     (r, g, b): 16 + i
     for i, (r, g, b) in enumerate(itertools.product(_levels, repeat=3))
 })
-
 for i in range(24):
     gray = 8 + i * 10
-    _rgb_to_code[(gray, gray, gray)] = 232 + i #very unreadable code ‼‼‼!!!
+    _rgb_to_code[(gray, gray, gray)] = 232 + i
 
 def getAnsiTerm(prefix, color): # literal term, not an abbreviation
     code = _rgb_to_code.get(tuple(color))
@@ -34,20 +34,19 @@ def getAnsiTerm(prefix, color): # literal term, not an abbreviation
         return f"{prefix}8;5;{code}"
     return f"{prefix}8;2;{color[0]};{color[1]};{color[2]}"
 
-def NormalHelper(color, isHsl, normal=None):
-    current = all(0.0 <= c <= 1.0 for c in color)
-    target = fallback(normal, not current)
-    
-    if current == target:
-        return color    
-    if isHsl:
-        hMultiplier = 1/360 if target else 360
-        slMultiplier = 0.01 if target else 100
-        h, s, l = color
-        return (h*hMultiplier, s*slMultiplier, l*slMultiplier)
-    else:
-        rgbMultiplier = 1/255 if target else 255
-        return tuple(int(val*rgbMultiplier) for val in color)
-
 def ColorTypeHelper(color, isHsl, normalized, asHsl=None):
+    ...
     
+def shortRepr(x, lengthMax=50, lengthPer=25): # garbage collect
+    match x:
+        case bool():
+            return str(x)
+        case int():
+            l = len(str(x))
+            
+            if l <= lengthMax:
+                return str(x)
+            
+            math.floor(math.log10())+1
+            
+# 
