@@ -1,4 +1,4 @@
-############ highest to lowest priority ###########
+############ random order // highest to lowest priority // ###########
 
 work on Fore, Back, whatever in Simple
 find stuff to add from inspobeta

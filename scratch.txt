@@ -1,0 +1,1 @@
+XXX raw color format that transforms into rgb, hsl, hsv, ... if possible

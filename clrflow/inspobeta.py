@@ -486,7 +486,7 @@ class _RichText:
                     endpoint=False,
                     dtype=int
                 ))
-
+        print("generateGradient", ndArrays)
         return numpy.concatenate(ndArrays), True
     
     def _generateCodeString(self, length):
@@ -857,5 +857,5 @@ def inplaceTest():
 
 while True:
     g = Gradient(backName=input("name: "), lengthFactor=1.0)
-    inplaceTest()
+    #inplaceTest()
     benchmarkTest()

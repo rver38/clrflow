@@ -1,6 +1,7 @@
 #give me some peace
-from .Universal import fallback
+from .Universal import fallback, getColorTerm, rv_DEBUG
 from collections.abc import Sequence
+from dataclasses import dataclass
 import colour
 
 resetAll = "\033[0m"
@@ -156,68 +157,73 @@ colorTable = { # https://www.w3schools.com/colors/colors_names.asp / https://www
     "yellowgreen": "#9ACD32"
 }
 
-codeTable = {} #convert rgb to colorcode
-levels = [0, 95, 135, 175, 215, 255]
-code = 16
-for r in levels:
-    for g in levels:
-        for b in levels:
-            codeTable[(r, g, b)] = code
-            code += 1
-for i in range(24):
-    gray = 8 + i * 10
-    codeTable[(gray, gray, gray)] = 232 + i
+class XYZ:
+    def __init__(self, x: int | float, y: int | float, z: int | float, normal: bool):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.normal = normal
+        #self.format
+    
+    @staticmethod
+    def check(c, normal=False):
+        if normal:
+            
+        
+        if isinstance(c, XYZ):
+            return c
 
-def _getCode(prefix, color):
-    code = codeTable.get(tuple(color))
-    if code is not None:
-        return f"{prefix}8;5;{code}"
-    return f"{prefix}8;2;{color[0]};{color[1]};{color[2]}"
-
-Number = int | float
-"a single numeric value, either int or float"
+XYZ()
 
 class Color:
     assumeHsl = False
     
     @staticmethod
-    def _normalizer(color, isHsl, target):
-        if isHsl:
-            hMultiplier = 1/360 if target else 360
-            slMultiplier = 0.01 if target else 100
-            h, s, l = color
-            return (h*hMultiplier, s*slMultiplier, l*slMultiplier)
-        else:
-            rgbMultiplier = 1/255 if target else 255
-            return tuple(int(val*rgbMultiplier) for val in color)
+    def getXYZnormal(color, customError=None):
+        """raises if color is not of form XYZ, returns its normal otherwise"""
+        normal = False
+        if not (isinstance(color, Sequence) and len(color)==3):
+            raise ValueError(customError or f"color must be a sequence of exactly 3 same-type numbers: ints between 0-255 or floats between 0.0-1.0; got {repr(color)} instead")
+        
+        for n in color:
+            if isinstance(n, float) and 0.0 <= n <= 1.0:
+                normal = True
+            elif not (isinstance(n, int) and 0 <= n <= 360):
+                raise ValueError(customError or f"color must be a sequence of exactly 3 same-type numbers: ints between 0-255 or floats between 0.0-1.0; got {repr(color)} instead")
+        return normal
     
     @staticmethod
-    def normalHelper(color: Sequence, isHsl: bool=False, normal: bool=None, asHsl:bool=None):
-        #if normal is none, flip, else make it whatever normal is, in the provided color format
+    def _normalizer(color, isHsl, target):
+        if isHsl:
+            hMult = 1/360 if target else 360
+            slMult = 0.01 if target else 100
+            h, s, l = color
+            return (h*hMult, s*slMult, l*slMult)
+        else:
+            rgbMult = 1/255 if target else 255
+            return tuple(int(val*rgbMult) for val in color)
+    
+    @staticmethod
+    def normalHelper(color: Sequence, isHsl: bool=False, asHsl:bool=None, asNormal: bool=None, isNormal: bool=None):
+        #if asNormal is none, flip, else make it whatever asNormal is, in the provided color format
         
-        current = False
-        if isinstance(color, Sequence) and len(color)==3:
-            for n in color:
-                if isinstance(n, float) and 0 <= n <= 1:
-                    current = True
-                elif not (isinstance(n, int) and 0 <= n <= 255):
-                    raise ValueError(f"color must be a sequence of exactly 3 numbers: ints in [0, 255] or floats in [0, 1]; got {repr(color)} instead")
-        
-        target = fallback(normal, not current)
-        
+        guessedNormal = Color.getXYZnormal(color) # also check input validity
+        isNormal = fallback(isNormal, guessedNormal)
+        toNormal = fallback(asNormal, not isNormal)
         asHsl = fallback(asHsl, isHsl)
+        
         if isHsl != asHsl:
-            if not current:
+            if not isNormal:
                 color = Color._normalizer(color, isHsl, True)
-                current = True
+                isNormal = True
             color = colour.hsl2rgb(color) if isHsl else colour.rgb2hsl(color)
             
-        if current != target:
-            color = Color._normalizer(color, asHsl, target)
+        if isNormal != toNormal:
+            color = Color._normalizer(color, asHsl, toNormal)
         return color
     
     @staticmethod
-    def parse(x, y=None, z=None, isHsl=None) -> ...:
+    def parse(x, y=None, z=None, isHsl=None):
         if isinstance(x, Color):
             return x.rgb, x.hsl
         elif isinstance(x, str):
@@ -227,20 +233,19 @@ class Color:
         isHsl = fallback(isHsl, Color.assumeHsl)
         
         if isinstance(x, Sequence):
-            if len(x) != 3: raise ValueError(f"if x is a sequence, it must consist of 3 ColorNumbers; got len {len(x)} instead")
             xyz = x
         else:
             xyz = (x,y,z)
         
-        rgb = Color.normalHelper(xyz, isHsl, False, False) # if this errors, x, y or z is an incorrect color value
-        hsl = Color.normalHelper(xyz, isHsl, True, True) # if this errors, Color.normalHelper broke
+        rgb = Color.normalHelper(xyz, isHsl, False, False)
+        hsl = Color.normalHelper(xyz, isHsl, True, True)
         return rgb, hsl
     
     @staticmethod
     def ansi(color, background=None):
         if isinstance(color, Color):
             color, background = color.rgb, fallback(background, color.background)
-        return f"\033[{_getCode(4 if background else 3, color)}m"
+        return f"\033[{getColorTerm(4 if background else 3, color)}m"
     
     def __init__(self, x, y=None, z=None, background=False, isHsl=None):
         self.background = background
@@ -256,37 +261,6 @@ class Color:
     
     def __repr__(self):
         return f"Color(rgb={self.rgb}, hsl={self.hsl}, background={self.background})"
-    
-    def __call__(self, as_dict=False, as_hex=False, rgb_tuple=False, hsl_tuple=False, inverted=False, complementary=False):
-        r, g, b = self.rgb
-        h, s, l = self.hsl
-        rgb_dirty = hsl_dirty = False
-
-        if complementary:
-            h, s, l = ((h+0.5)%1, s, 1-l)
-            rgb_dirty = True
-
-        if rgb_dirty and (as_dict or as_hex or rgb_tuple or inverted):
-            r, g, b = self.normalHelper(colour.hsl2rgb((h,s,l), True, False), False, False)
-
-        if inverted:
-            r, g, b = (255-r, 255-g, 255-b)
-            hsl_dirty = True
-        
-        if hsl_dirty and (as_dict or hsl_tuple):
-            h, s, l = colour.rgb2hsl(self.normalHelper((r,g,b), False, True))
-                
-        if rgb_tuple and hsl_tuple:
-            return (r, g, b), (h, s, l)
-        if rgb_tuple:
-            return (r, g, b)
-        if hsl_tuple:
-            return (h, s, l)
-        if as_dict:
-            return {"r":r, "g":g, "b":b, "h":h, "s":s, "l":l, "rgb":(r,g,b), "hsl":(h,s,l)}
-        if as_hex:
-            return '#%02x%02x%02x' % (r, g, b)
-        return self.ansi(self) # cause rgb may be dirty
     
     def __call__(self, RGBtriplet=False, HSLtriplet=False, asDict=False, asHex=False, inverted=False, complementary=False):
         r, g, b = self.rgb
@@ -317,7 +291,7 @@ class Color:
             return {"r":r, "g":g, "b":b, "h":h, "s":s, "l":l, "rgb":(r,g,b), "hsl":(h,s,l)}
         if asHex:
             return '#%02x%02x%02x' % (r, g, b)
-        return self.ansi((r,g,b), self.background) # cause rgb may be dirty
+        return self.ansi((r,g,b), self.background) # rgb may be dirty
 
 class Fore:
     black = "\033[30m"
@@ -367,6 +341,8 @@ class Back:
     def __call__(self, x, y=None, z=None, isHsl=None):
         return Color(x, y, z, True, isHsl)
 
+# worry about compat and categorization later
+
 class Style:
     Bold = "\033[1m"
     Dim = "\033[2m"
@@ -380,7 +356,6 @@ class Style:
     Bold = "\033[1m"
     
     noBold = "\033[22m"
-    
     
     Underline = "\033[4m"
     noUnderline = "\033[24m"
