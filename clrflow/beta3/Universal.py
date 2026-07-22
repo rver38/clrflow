@@ -1,4 +1,4 @@
-import itertools
+import itertools, re
 
 def fallback(priority, fallback, condition=None):
     return priority if priority != condition else fallback
@@ -20,3 +20,10 @@ def getColorTerm(prefix, color):
     if code is not None:
         return f"{prefix}8;5;{code}"
     return f"{prefix}8;2;{color[0]};{color[1]};{color[2]}"
+
+ansiRegex = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+def stripAnsi(text:str):
+    return ansiRegex.sub('',text)
+
+Missing = object()
+"a placeholder to differentiate an ungiven parameter from a paremeter being given as None"

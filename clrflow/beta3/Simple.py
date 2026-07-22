@@ -1,4 +1,4 @@
-from typing import Sequence
+from collections.abc import Sequence
 from Universal import fallback, getColorTerm
 import colour
 
@@ -157,17 +157,21 @@ class Color:
     def __init__(self, x: int | Sequence | str, y: int = None, z: int = None, background: bool = False):
         if isinstance(x, Color):
             self.xyz = x.xyz
+            
         elif isinstance(x, str):
             x = colorTable.get(x.lower(),x)
             xyz = tuple(int(255*c) for c in colour.hex2rgb(x))
+            
         elif isinstance(x, Sequence):
             xyz = x
+        
         else:
             xyz = (x,y,z)
         
         condition = (not isinstance(c, int) for c in xyz)
         if any(condition) or (len(condition) != 3):
             raise ValueError("xyz must be exactly 3 numbers")
+        
         self.xyz = xyz
         self.background = background
     
@@ -181,6 +185,7 @@ class Color:
     def __add__(self, other):
         if not isinstance(other, Format):
             return str(self) + other
+        
         tmp = Format()
         tmp.properties = [self.ansi(), *other.properties]
         return tmp
@@ -237,6 +242,7 @@ class _Fore:
     
     def __call__(self, x, y=None, z=None):
         return Color(x, y, z, False)
+
 Fore = _Fore()
     
 class _Back:
@@ -262,11 +268,12 @@ class _Back:
     
     def __call__(self, x, y=None, z=None):
         return Color(x, y, z, True)
+
 Back = _Back()
 
 # fact check this
 class Style:
-    "assumably universal formatting options such as bold, italic, etc."
+    "universal formatting options such as bold, italic, etc."
     Bold = _f("1")
     Dim = Faint = _f("2")
     noBold = noDim = noFaint = _f("22")
